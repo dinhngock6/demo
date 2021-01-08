@@ -1,0 +1,35 @@
+﻿/* Chương trình điều khiển bộ DC/AC 1 pha công suất 5kW */
+Người lập trình: Ngọc
+Ngày viết: 9/03/2020
+Giới thiệu:
+1. Chương trình được lập trình theo file mô phỏng
+2. Cho phép nạp trên RAM hoặc FLASH.
+3. Có tích hợp các chức năng bảo vệ như:
+	+ Bảo vệ quá áp, thấp áp điện áp lưới
+	+ Bảo vệ quá áp, thấp áp điện áp tải
+	+ Bảo vệ quá áp, thấp áp điện áp Udc, Uc1, Uc2
+	+ Bảo vệ quá dòng bằng phần mềm (đo dòng điện về rồi cảnh báo)
+	+ Bảo vệ quá dòng bằng phần cứng (chức năng compare của DSP)
+	+ Bảo vệ quá dòng trên van IGBT (chức năng TRIPZONE của PWM)
+4. Chương trình chia làm nhiều level tương ứng với cấu trúc khác nhau
+	+ Level 1: Điều khiển vòng hở, không có thuật toán cân bằng điện áp trên tụ
+	+ Level 2: Điều khiển vòng hở, có thuật toán cân bằng điện áp trên tụ
+	+ Level 3: Điều khiển vòng kín chế độ độc lập với một mạch vòng dòng điện
+	+ Level 4: Điều khiển vòng kín chế độ độc lập với 2 mạch vòng (dòng điện, điện áp)
+	+ Level 5: Điều khiển vòng kín chế độ nối lưới với một mạch vòng dòng điện
+	+ Level 6: Điều khiển vòng kín chế độ nối lưới với 2 mạch vòng (dòng điện, điện áp)
+
+//--------------------------------------------------------------------
+
+Cập nhật:
+1. Ngày 10/03/2019: Tần số phát xung 8kHz
+
+2. Ngày 12/03/2019: Tần số phát xung 10kHz, Sample time ADC, PLL, dong điện 5kHz.
+
+3. Ngày 19/03/2019: Tần số phát xung 10kHz, sample time ADC, PLL dòng điện 10kHz.
+
+4. Ngày 20/03/2019: Tần số phát xung 10kHz, sample time ADC, PLL dòng điện 10kHz.
++ Đọc dòng điện 2 lần liên tiếp rồi cộng trung bình.
+
+5. Ngày 20/03/2019: Tần số phát xung 10kHz, sample time ADC, PLL dòng điện 5kHz.
++ Đọc dòng điện 2 lần liên tiếp rồi cộng trung bình.

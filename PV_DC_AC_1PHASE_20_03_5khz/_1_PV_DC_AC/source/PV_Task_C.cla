@@ -1,0 +1,1158 @@
+
+
+
+#include "PV_Shared.h"
+
+
+//#pragma CODE_SECTION(Cla1Task1, "Cla1Prog");
+
+/* Data Types CLA
+ * char, short - 16bits
+ * int, long, long long -32 bits
+ * float, double, long double -32 bits
+ */
+
+/***************************************************************************/
+// Variables used for computation on the CLA are in CLA writable space i.e. the CLA data RAM
+
+#pragma DATA_SECTION(IsrCount,"CLADataLS0");
+volatile Uint32 IsrCount;
+
+#pragma DATA_SECTION(IsrTicker,"CLADataLS0");
+volatile Uint32 IsrTicker;
+
+#pragma DATA_SECTION(rg1,"CLADataLS0");
+volatile RAMP_GEN_CLA rg1;
+
+//======================================================
+// inverse park object for inverter reference voltages transformation
+#pragma DATA_SECTION(park_volt_Vg,"CLADataLS0");
+volatile PARK_1PHASE_CLA park_volt_Vg;
+
+//==================================
+#pragma DATA_SECTION(pll_Vg,"CLADataLS0");
+volatile PLL_1PHASE_CLA pll_Vg;
+
+//============================================
+// PR Controller
+#pragma DATA_SECTION(PR_Parameter_curr,"CLADataLS0");
+volatile PR_Parameter PR_Parameter_curr;
+
+#pragma DATA_SECTION(PR_Calculator_curr,"CLADataLS0");
+volatile PR_Calculator PR_Calculator_curr;
+
+#pragma DATA_SECTION(PR_Parameter_volt,"CLADataLS0");
+volatile PR_Parameter PR_Parameter_volt;
+
+#pragma DATA_SECTION(PR_Calculator_volt,"CLADataLS0");
+volatile PR_Calculator PR_Calculator_volt;
+
+//=======================================================
+#pragma DATA_SECTION(Os_para,"CLADataLS0");
+volatile OS_Parameter Os_para;
+
+#pragma DATA_SECTION(Os_calcu,"CLADataLS0");
+volatile OS_Calculator Os_calcu;
+
+//=======================================================
+
+#pragma DATA_SECTION(pi_volt_Udc,"CLADataLS0");
+volatile PI_NORMAL_CLA pi_volt_Udc;
+
+#pragma DATA_SECTION(pi_volt_Us,"CLADataLS0");
+volatile PI_NORMAL_CLA pi_volt_Us;
+
+//========================================================
+
+#pragma DATA_SECTION(Spwm,"CLADataLS0");
+volatile SPWM_T_TYPE_1Pha_CLA Spwm;
+
+#pragma DATA_SECTION(pwm,"CLADataLS0");
+volatile PWMGEN_3T_CLA pwm;
+
+//======================================================
+
+#pragma DATA_SECTION(rc1,"CLADataLS0");
+volatile RC_CLA rc1;
+
+#pragma DATA_SECTION(rc_Ref,"CLADataLS0");
+volatile RC_CLA rc_Ref;
+
+//======================================================================
+
+#pragma DATA_SECTION(Calculator_VgRms,"CLADataLS0");
+volatile CALCULATOR_RMS_CLA Calculator_VgRms;
+
+#pragma DATA_SECTION(Calculator_VLRms,"CLADataLS0");
+volatile CALCULATOR_RMS_CLA Calculator_VLRms;
+
+#pragma DATA_SECTION(Calculator_IinvRms,"CLADataLS0");
+volatile CALCULATOR_RMS_CLA Calculator_IinvRms;
+
+#pragma DATA_SECTION(Calculator_ILRms,"CLADataLS0");
+volatile CALCULATOR_RMS_CLA Calculator_ILRms;
+
+//===========================================================
+#pragma DATA_SECTION(AdcVaule,"CLADataLS0");
+volatile ADC_VALUE  AdcVaule ;
+
+#pragma DATA_SECTION(adc_filter,"CLADataLS0");
+volatile ADC_VALUE adc_filter;
+
+#pragma DATA_SECTION(adc_offset,"CLADataLS0");
+volatile ADC_VALUE adc_offset;
+
+/* Band Stop filter  */
+#pragma DATA_SECTION(filterBand_Udc,"CLADataLS0");
+volatile BANDSTOP_FILTER  filterBand_Udc;
+
+/* Low pass filter  */
+#pragma DATA_SECTION(filter_Udc_pre,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Udc_pre;
+
+#pragma DATA_SECTION(filter_Udc,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Udc;
+
+#pragma DATA_SECTION(filter_Udc1,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Udc1;
+
+#pragma DATA_SECTION(filter_Udc2,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Udc2;
+
+#pragma DATA_SECTION(filter_Iinv,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Iinv;
+
+#pragma DATA_SECTION(filter_IL,"CLADataLS0");
+volatile LOWPASSFILTER  filter_IL;
+
+#pragma DATA_SECTION(filter_Vg,"CLADataLS0");
+volatile LOWPASSFILTER  filter_Vg;
+
+#pragma DATA_SECTION(filter_VL,"CLADataLS0");
+volatile LOWPASSFILTER  filter_VL;
+
+#pragma DATA_SECTION(filter_temp,"CLADataLS0");
+volatile LOWPASSFILTER  filter_temp;
+
+#pragma DATA_SECTION(filter_IinvRms,"CLADataLS0");
+volatile LOWPASSFILTER  filter_IinvRms;
+
+#pragma DATA_SECTION(filter_ILRms,"CLADataLS0");
+volatile LOWPASSFILTER  filter_ILRms;
+
+#pragma DATA_SECTION(filter_VgRms,"CLADataLS0");
+volatile LOWPASSFILTER  filter_VgRms;
+
+#pragma DATA_SECTION(filter_VLRms,"CLADataLS0");
+volatile LOWPASSFILTER  filter_VLRms;
+
+//==============================================
+
+#pragma DATA_SECTION(Kp_curr_test,"CLADataLS0");
+volatile float Kp_curr_test;
+
+#pragma DATA_SECTION(Ki_curr_test,"CLADataLS0");
+volatile float Ki_curr_test;
+
+#pragma DATA_SECTION(Kp_volt_Us_test,"CLADataLS0");
+volatile float Kp_volt_Us_test;
+
+#pragma DATA_SECTION(Ki_volt_Us_test,"CLADataLS0");
+volatile float Ki_volt_Us_test;
+
+#pragma DATA_SECTION(Kp_volt_Udc_test,"CLADataLS0");
+volatile float Kp_volt_Udc_test;
+
+#pragma DATA_SECTION(Ki_volt_Udc_test,"CLADataLS0");
+volatile float Ki_volt_Udc_test;
+
+#pragma DATA_SECTION(loop_curr_Is,"CLADataLS0");
+volatile short loop_curr_Is;
+
+#pragma DATA_SECTION(loop_volt_Us,"CLADataLS0");
+volatile short loop_volt_Us;
+
+#pragma DATA_SECTION(loop_volt_Udc,"CLADataLS0");
+volatile short loop_volt_Udc;
+
+#pragma DATA_SECTION(count_start_CL,"CLADataLS0");
+volatile short count_start_CL;
+
+#pragma DATA_SECTION(controller_error_curr,"CLADataLS0");
+volatile short controller_error_curr;
+
+#pragma DATA_SECTION(controller_error_volt,"CLADataLS0");
+volatile short controller_error_volt;
+
+#pragma DATA_SECTION(sw_uc,"CLADataLS0");
+volatile short sw_uc;
+
+#pragma DATA_SECTION(count_controller_curr,"CLADataLS0");
+volatile short count_controller_curr;
+
+#pragma DATA_SECTION(OffsetCalCounter,"CLADataLS0");
+volatile short OffsetCalCounter;
+
+#pragma DATA_SECTION(ResetOffset,"CLADataLS0");
+volatile short ResetOffset;
+
+#pragma DATA_SECTION(i,"CLADataLS0");
+volatile short i;
+
+#pragma DATA_SECTION(START_ADC,"CLADataLS0");
+volatile short START_ADC;
+
+#pragma DATA_SECTION(START_CONTROLLER,"CLADataLS0");
+volatile short START_CONTROLLER;
+
+#pragma DATA_SECTION(Is,"CLADataLS0");
+volatile float Is;
+
+#pragma DATA_SECTION(Us,"CLADataLS0");
+volatile float Us;
+
+#pragma DATA_SECTION(point_start,"CLADataLS0");
+volatile short point_start;
+
+/***************************************************************************/
+// The C28x instructs the CLA to change the speed or close speed loop
+// These variables are declared in the message RAM
+
+#pragma DATA_SECTION(CpuToCLA,"CpuToCla1MsgRAM");
+volatile CPU_TO_CLA CpuToCLA;
+
+#pragma DATA_SECTION(ClaToCPU,"Cla1ToCpuMsgRAM");
+volatile  CLA_TO_CPU ClaToCPU;
+
+// Whether MDEBUGSTOP needs to be compiled or not
+#define CLA_DEBUG 0
+
+
+interrupt void Cla1Task1 (void)
+{
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+
+
+    if(CpuToCLA.EnableADC == 0 ) START_ADC = 2;
+    if(CpuToCLA.EnableADC == 1 && START_ADC != 0) START_ADC = 0;
+    if(START_ADC == 0)
+    {
+        //=========================================================================
+        //   OFFSET ADC
+        // ========================================================================
+
+        OffsetCalCounter++;
+        if(OffsetCalCounter <= NUMBER_SAMPLE)
+        {
+            adc_offset.Udc1  += UDC1_HCPL;
+            adc_offset.Udc2  += UDC2_HCPL;
+            adc_offset.Vg    += VG_HCPL;
+            adc_offset.VL    += VL_HCPL;
+            adc_offset.Iinv  += I_INV_LEM_TB;
+            adc_offset.IL    += IL_LEM;
+            adc_offset.Temp  += TEMP_IGBT;
+        }
+        if(OffsetCalCounter == (NUMBER_SAMPLE + 1))
+        {
+            adc_offset.Udc1  = adc_offset.Udc1/NUMBER_SAMPLE;
+            adc_offset.Udc2  = adc_offset.Udc2/NUMBER_SAMPLE;
+            adc_offset.Vg    = adc_offset.Vg/NUMBER_SAMPLE;
+            adc_offset.VL    = adc_offset.VL/NUMBER_SAMPLE;
+            adc_offset.Iinv  = adc_offset.Iinv/NUMBER_SAMPLE;
+            adc_offset.IL    = adc_offset.IL/NUMBER_SAMPLE;
+            adc_offset.Temp  = adc_offset.Temp/NUMBER_SAMPLE;
+
+//          adc_offset.Udc1 = 17.8899994;
+//          adc_offset.Udc2 = -28.0;
+//          adc_offset.Temp = 2040;
+
+            adc_offset.Udc1 = 33.8;
+            adc_offset.Udc2 = 12.0;
+            adc_offset.Temp = 2040;
+
+        }
+        if (OffsetCalCounter > (NUMBER_SAMPLE + 1))
+        {
+            OffsetCalCounter = 2*NUMBER_SAMPLE;
+            START_ADC = 1;
+        }
+
+    }
+
+    if(START_ADC == 1)
+    {
+        //=========================================================================
+        //   Read ADC
+        // ========================================================================
+        AdcVaule.Udc1   = (UDC1_HCPL - adc_offset.Udc1)*ADC_PU_SCALE_FACTOR_12BIT/2.0;
+        AdcVaule.Udc2   = (UDC2_HCPL - adc_offset.Udc2)*ADC_PU_SCALE_FACTOR_12BIT/2.0;
+        AdcVaule.Vg     = (VG_HCPL - adc_offset.Vg)*ADC_PU_SCALE_FACTOR_12BIT*2.0;
+        AdcVaule.VL     = (VL_HCPL - adc_offset.VL)*ADC_PU_SCALE_FACTOR_12BIT*2.0;
+        AdcVaule.Iinv   = (I_INV_LEM_TB - adc_offset.Iinv)*ADC_PU_SCALE_FACTOR_12BIT*2.0;
+        AdcVaule.IL     = (IL_LEM - adc_offset.IL)*ADC_PU_SCALE_FACTOR_12BIT*2.0;
+        AdcVaule.Temp   = (TEMP_IGBT - adc_offset.Temp)*ADC_PU_SCALE_FACTOR_12BIT;
+
+        AdcVaule.Udc    = AdcVaule.Udc1 + AdcVaule.Udc2;
+        //=========================================================================================
+        //  Filter signals ADC
+        filter_Udc_pre.Vin = AdcVaule.Udc;
+        LOWPASSFILTER_MACRO(filter_Udc_pre)
+
+        filterBand_Udc.In_k = filter_Udc_pre.Vout;
+        BANDSTOP_FILTER_MACRO(filterBand_Udc);
+
+        filter_Udc.Vin = AdcVaule.Udc;
+        LOWPASSFILTER_MACRO(filter_Udc)
+        adc_filter.Udc = filter_Udc.Vout;
+
+        filter_Udc1.Vin = AdcVaule.Udc1;
+        LOWPASSFILTER_MACRO(filter_Udc1)
+        adc_filter.Udc1 = filter_Udc1.Vout;
+
+        filter_Udc2.Vin = AdcVaule.Udc2;
+        LOWPASSFILTER_MACRO(filter_Udc2)
+        adc_filter.Udc2 = filter_Udc2.Vout;
+
+        filter_Vg.Vin = AdcVaule.Vg;
+        LOWPASSFILTER_MACRO(filter_Vg)
+        adc_filter.Vg = filter_Vg.Vout;
+
+        filter_VL.Vin = AdcVaule.VL;
+        LOWPASSFILTER_MACRO(filter_VL)
+        adc_filter.VL = filter_VL.Vout;
+
+        filter_Iinv.Vin = AdcVaule.Iinv;
+        LOWPASSFILTER_MACRO(filter_Iinv)
+        adc_filter.Iinv = filter_Iinv.Vout;
+
+        filter_IL.Vin = AdcVaule.IL;
+        LOWPASSFILTER_MACRO(filter_IL)
+        adc_filter.IL = filter_IL.Vout;
+
+        filter_temp.Vin = AdcVaule.Temp;
+        LOWPASSFILTER_MACRO(filter_temp)
+        adc_filter.Temp = filter_temp.Vout;
+
+
+        //=========================================================================================
+        // Calculator PLL phase
+
+        if(filter_VgRms.Vout > 1.0*PV_VGRID_MIN/Us_max)
+        {
+            park_volt_Vg.Vs_k = adc_filter.Vg;
+            park_volt_Vg.Theta = pll_Vg.Theta;
+            PARK_1PHASE_CLA_MACRO(park_volt_Vg)
+
+            pll_Vg.Usq = park_volt_Vg.Usq;
+            PLL_1PHASE_CLA_MACRO(pll_Vg);
+
+        }
+        else
+        {
+        	park_volt_Vg.Vs_k_1 = 0; park_volt_Vg.Vs_k_2 = 0;
+        	park_volt_Vg.Ualpha_k_1 = 0; park_volt_Vg.Ualpha_k_2 = 0;
+        	park_volt_Vg.Ubeta_k_1 = 0; park_volt_Vg.Ubeta_k_2 = 0;
+
+        	pll_Vg.w1_I = 0;
+        	pll_Vg.Theta = 0;
+        }
+
+        //=========================================================================================
+        // Calculator Vrms, Irms of inverter
+
+        Calculator_VgRms.in = adc_filter.Vg;
+        CALCULATOR_RMS_V3_CLA_MARCO(Calculator_VgRms);
+
+        Calculator_VLRms.in = adc_filter.VL;
+        CALCULATOR_RMS_V3_CLA_MARCO(Calculator_VLRms);
+
+        Calculator_IinvRms.in = adc_filter.Iinv;
+        CALCULATOR_RMS_V3_CLA_MARCO(Calculator_IinvRms);
+
+        Calculator_ILRms.in = adc_filter.IL;
+        CALCULATOR_RMS_V3_CLA_MARCO(Calculator_ILRms);
+
+        //=========================================================================================
+        // Filter Rms
+        filter_VgRms.Vin = Calculator_VgRms.rms;
+        LOWPASSFILTER_MACRO(filter_VgRms)
+
+        filter_VLRms.Vin = Calculator_VLRms.rms;
+        LOWPASSFILTER_MACRO(filter_VLRms)
+
+        filter_IinvRms.Vin = Calculator_IinvRms.rms;
+        LOWPASSFILTER_MACRO(filter_IinvRms)
+
+        filter_ILRms.Vin = Calculator_ILRms.rms;
+        LOWPASSFILTER_MACRO(filter_ILRms)
+
+        //========================================================================
+        ClaToCPU.MEASUARE_CPU.VgRms = filter_VgRms.Vout;
+        ClaToCPU.MEASUARE_CPU.VLRms = filter_VLRms.Vout;
+        ClaToCPU.MEASUARE_CPU.IinvRms = filter_IinvRms.Vout;
+        ClaToCPU.MEASUARE_CPU.ILRms = filter_ILRms.Vout;
+        ClaToCPU.MEASUARE_CPU.Theta = pll_Vg.Theta;
+
+
+        ClaToCPU.MEASUARE_CPU.Ta1 = Spwm.Ta1;
+        ClaToCPU.MEASUARE_CPU.Ta2 = Spwm.Ta2;
+        ClaToCPU.MEASUARE_CPU.Tb1 = Spwm.Tb1;
+        ClaToCPU.MEASUARE_CPU.Tb2 = Spwm.Tb2;
+
+        ClaToCPU.ADC_CPU.Tmp = filterBand_Udc.Out_k;
+        ClaToCPU.ADC_CPU.Udc = adc_filter.Udc;
+        ClaToCPU.ADC_CPU.Udc1 = adc_filter.Udc1;
+        ClaToCPU.ADC_CPU.Udc2 = adc_filter.Udc2;
+        ClaToCPU.ADC_CPU.Vg   = adc_filter.Vg;
+        ClaToCPU.ADC_CPU.VL   = adc_filter.VL;
+        ClaToCPU.ADC_CPU.Iinv = AdcVaule.Iinv;
+        ClaToCPU.ADC_CPU.IL   = adc_filter.IL;
+        ClaToCPU.ADC_CPU.Temp = adc_filter.Temp;
+
+        //========================================================================
+        // Level 1,2,3,4
+		#if (BUILDLEVEL == LEVEL1||BUILDLEVEL == LEVEL2||BUILDLEVEL == LEVEL3||BUILDLEVEL == LEVEL4|BUILDLEVEL == LEVEL7||BUILDLEVEL == LEVEL8)
+        if(CpuToCLA.EnableFlag == 1)START_CONTROLLER = 1;
+        else START_CONTROLLER = 0;
+		#endif
+
+        // Level 5,6
+		#if (BUILDLEVEL == LEVEL5||BUILDLEVEL == LEVEL6)
+        if(CpuToCLA.EnableFlag == 1)
+        {
+        	if((adc_filter.Vg < 0.01)&&(adc_filter.Vg > -0.01))point_start = 1;
+        }
+        else
+        {
+        	point_start = 0;
+        	START_CONTROLLER = 0;
+        }
+        if(point_start == 1) START_CONTROLLER = 1;
+		#endif
+
+        //========================================================================
+    }
+
+    if(START_CONTROLLER == 1)
+    {
+
+        EPwm1Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+        EPwm2Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+        EPwm3Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+        EPwm4Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+        EPwm5Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+        EPwm6Regs.DBCTL.bit.OUT_MODE    = 3;    // Enabled Dead Band
+
+
+#if (BUILDLEVEL == LEVEL1)
+
+        IsrTicker++;
+        //----------------------------------------------------------------------------
+
+        rc1.TargetValue = CpuToCLA.Fref;
+        RC_CLA_MACRO(rc1)
+
+//        rg1.Freq = rc1.SetpointValue;
+        rg1.Freq = CpuToCLA.Fref;
+        RAMP_GEN_CLA_MACRO(rg1)
+
+
+        rc_Ref.TargetValue = CpuToCLA.UsTesting;
+        RC_CLA_MACRO(rc_Ref)
+
+       // ------------------------------------------------------------------------------
+       //    Connect inputs of the SPEED_FR module and call the speed calculation macro
+       // ------------------------------------------------------------------------------
+
+        Us   = (can2)*rc_Ref.SetpointValue*CLAsinPU(rg1.Out);
+        //----------------------------------------------------------------------------
+
+        Spwm.Ua   = Us;
+        Spwm.Udc   = CpuToCLA.UdcTesting;
+//        Spwm.Udc = adc_filter.Udc;
+        SPWM_T_TYPE_OPEN_CLA_MARCO(Spwm);
+//
+//      Spwm.Ta1 = 0.5;
+//      Spwm.Ta2 = 0.5;
+
+//
+//        Spwm.Tb1 = 0.5;
+//        Spwm.Tb2 = 0.5;
+
+        // ------------------------------------------------------------------------------
+        //  Connect inputs of the PWM_DRV module and call the PWM signal generation macro
+        // ------------------------------------------------------------------------------
+        pwm.MfuncA1 = Spwm.Ta1;
+        pwm.MfuncA2 = Spwm.Ta2;
+
+        pwm.MfuncB1 = Spwm.Tb1;
+        pwm.MfuncB2 = Spwm.Tb2;
+
+        PWM_3T_MACRO(pwm);
+
+        // ------------------------------------------------------------------------------
+        //    Connect inputs of the PWMDAC module
+        // ------------------------------------------------------------------------------
+         PWMDAC_MACRO((Us +1.0)/2.0,(Us +1.0)/2.0,(Us +1.0)/2.0,(Us +1.0)/2.0,125)
+
+    #endif
+
+#if (BUILDLEVEL == LEVEL2)
+
+        IsrTicker++;
+
+        //----------------------------------------------------------------------------
+
+        rg1.Freq = CpuToCLA.Fref;
+        RAMP_GEN_CLA_MACRO(rg1)
+
+        rc_Ref.TargetValue = CpuToCLA.UsTesting;
+        RC_CLA_MACRO(rc_Ref)
+
+       // ------------------------------------------------------------------------------
+       //    Connect inputs of the SPEED_FR module and call the speed calculation macro
+       // ------------------------------------------------------------------------------
+
+        Us   = (can2)*rc_Ref.SetpointValue*CLAsinPU(rg1.Out);
+
+        //----------------------------------------------------------------------------
+
+        Spwm.Ua   = Us;
+        Spwm.Udc1   = adc_filter.Udc1;
+        Spwm.Udc2   = adc_filter.Udc2;
+        Spwm.Udc = adc_filter.Udc;
+        SPWM_T_TYPE_1Pha_V3_CLA_MARCO(Spwm);
+
+        // ------------------------------------------------------------------------------
+        //  Connect inputs of the PWM_DRV module and call the PWM signal generation macro
+        // ------------------------------------------------------------------------------
+        pwm.MfuncA1 = Spwm.Ta1;
+        pwm.MfuncA2 = Spwm.Ta2;
+
+        pwm.MfuncB1 = Spwm.Tb1;
+        pwm.MfuncB2 = Spwm.Tb2;
+
+        PWM_3T_V3_MACRO(pwm);
+
+    // ------------------------------------------------------------------------------
+    //    Connect inputs of the PWMDAC module
+    // ------------------------------------------------------------------------------
+        PWMDAC_MACRO(Spwm.Ta1,Spwm.Ta2,Spwm.Tb1,Spwm.Tb2,125)
+
+    #endif
+#if (BUILDLEVEL == LEVEL3)
+
+        IsrTicker++;
+
+        //----------------------------------------------------------------------------
+
+        rg1.Freq = CpuToCLA.Fref;
+        RAMP_GEN_CLA_MACRO(rg1)
+
+        rc_Ref.TargetValue = CpuToCLA.IsRef;
+        RC_CLA_MACRO(rc_Ref)
+
+       // ------------------------------------------------------------------------------
+       //    Connect inputs of the SPEED_FR module and call the speed calculation macro
+       // ------------------------------------------------------------------------------
+
+        Is   = (can2)*rc_Ref.SetpointValue*CLAsinPU(rg1.Out);
+
+        //----------------------------------------------------------------------------
+        // PR current controller
+
+        PR_Parameter_curr.Kp = Kp_curr_test;
+        PR_Parameter_curr.Ki = Ki_curr_test;
+        PR_CALCULATOR_PARAMETER_V1(PR_Parameter_curr,1)
+
+        PR_Calculator_curr.Error_k = Is - AdcVaule.Iinv;
+        PR_Calcalator_MACRO(PR_Calculator_curr,PR_Parameter_curr)
+
+        Spwm.Ua   = PR_Calculator_curr.OUT;
+        Spwm.Udc1   = adc_filter.Udc1;
+        Spwm.Udc2   = adc_filter.Udc2;
+        Spwm.Udc = adc_filter.Udc;
+        SPWM_T_TYPE_1Pha_V3_CLA_MARCO(Spwm);
+
+        // ------------------------------------------------------------------------------
+        //  Connect inputs of the PWM_DRV module and call the PWM signal generation macro
+        // ------------------------------------------------------------------------------
+        pwm.MfuncA1 = Spwm.Ta1;
+        pwm.MfuncA2 = Spwm.Ta2;
+
+        pwm.MfuncB1 = Spwm.Tb1;
+        pwm.MfuncB2 = Spwm.Tb2;
+
+        PWM_3T_V2_MACRO(pwm);
+
+    // ------------------------------------------------------------------------------
+    //    Connect inputs of the PWMDAC module
+    // ------------------------------------------------------------------------------
+        PWMDAC_MACRO((Is + 1.0)/2.0,(AdcVaule.Iinv + 1.0)/2.0,(Is + 1.0)/2.0,(AdcVaule.Iinv + 1.0)/2.0,125)
+
+
+    #endif
+
+#if (BUILDLEVEL == LEVEL4)
+
+        IsrTicker++;
+
+        //----------------------------------------------------------------------------
+
+        rg1.Freq = CpuToCLA.Fref;
+        RAMP_GEN_CLA_MACRO(rg1)
+
+        rc_Ref.TargetValue = CpuToCLA.UsRef;
+        RC_CLA_MACRO(rc_Ref)
+
+       // ------------------------------------------------------------------------------
+       //    Connect inputs of the SPEED_FR module and call the speed calculation macro
+       // ------------------------------------------------------------------------------
+
+        Us   = (can2)*rc_Ref.SetpointValue*CLAsinPU(rg1.Out);
+
+        //----------------------------------------------------------------------------
+        // PR voltage controller
+        PR_Parameter_volt.Kp = Kp_volt_Us_test;
+        PR_Parameter_volt.Ki = Ki_volt_Us_test;
+
+        PR_CALCULATOR_PARAMETER_V1(PR_Parameter_volt,1)
+
+        PR_Calculator_volt.Error_k = Us - adc_filter.VL;
+        PR_Calcalator_MACRO(PR_Calculator_volt,PR_Parameter_volt)
+
+        //----------------------------------------------------------------------------
+        // PR current controller
+
+        PR_Parameter_curr.Kp = Kp_curr_test;
+        PR_Parameter_curr.Ki = Ki_curr_test;
+        PR_CALCULATOR_PARAMETER_V1(PR_Parameter_curr,1)
+
+        PR_Calculator_curr.Error_k = PR_Calculator_volt.OUT - AdcVaule.Iinv;
+        PR_Calcalator_MACRO(PR_Calculator_curr,PR_Parameter_curr)
+
+        //-----------------------------------------------------------------------------
+        // PWM
+
+        Spwm.Ua   = PR_Calculator_curr.OUT;
+        Spwm.Udc1   = adc_filter.Udc1;
+        Spwm.Udc2   = adc_filter.Udc2;
+        Spwm.Udc = adc_filter.Udc;
+        SPWM_T_TYPE_1Pha_V3_CLA_MARCO(Spwm);
+
+        // ------------------------------------------------------------------------------
+        //  Connect inputs of the PWM_DRV module and call the PWM signal generation macro
+        // ------------------------------------------------------------------------------
+        pwm.MfuncA1 = Spwm.Ta1;
+        pwm.MfuncA2 = Spwm.Ta2;
+
+        pwm.MfuncB1 = Spwm.Tb1;
+        pwm.MfuncB2 = Spwm.Tb2;
+
+        PWM_3T_V3_MACRO(pwm);
+
+    // ------------------------------------------------------------------------------
+    //    Connect inputs of the PWMDAC module
+    // ------------------------------------------------------------------------------
+       PWMDAC_MACRO((Us + 1.0)/2.0,(adc_filter.VL + 1.0)/2.0,(PR_Calculator_volt.OUT + 1.0)/2.0,(AdcVaule.Iinv + 1.0)/2.0,125)
+
+       if(PR_Calculator_volt.OUT > 0.890 || PR_Calculator_volt.OUT < -0.890)controller_error_volt++;
+       else controller_error_volt = 0;
+
+       if(PR_Calculator_curr.OUT > 0.890 || PR_Calculator_curr.OUT < -0.890) controller_error_curr++;
+       else controller_error_curr = 0;
+
+       if(controller_error_volt > 100 || controller_error_curr > 100)
+        ClaToCPU.MEASUARE_CPU.flag = 1;
+
+    #endif
+
+#if (BUILDLEVEL == LEVEL5)
+
+        IsrTicker++;
+
+        //----------------------------------------------------------------------------
+
+        rc_Ref.TargetValue = CpuToCLA.IsRef;
+        RC_CLA_MACRO(rc_Ref)
+
+       // ------------------------------------------------------------------------------
+       //    Connect inputs of the SPEED_FR module and call the speed calculation macro
+       // ------------------------------------------------------------------------------
+
+        Is   = (can2)*rc_Ref.SetpointValue*CLAcosPU(pll_Vg.Theta);
+
+        //----------------------------------------------------------------------------
+        // PR current controller
+
+        PR_Parameter_curr.Kp = Kp_curr_test;
+        PR_Parameter_curr.Ki = Ki_curr_test;
+        PR_CALCULATOR_PARAMETER_V1(PR_Parameter_curr,1)
+
+        PR_Calculator_curr.Error_k = Is - AdcVaule.Iinv;
+        PR_Calcalator_MACRO(PR_Calculator_curr,PR_Parameter_curr)
+
+        Spwm.Ua   = PR_Calculator_curr.OUT;
+        Spwm.Udc1   = adc_filter.Udc1;
+        Spwm.Udc2   = adc_filter.Udc2;
+        Spwm.Udc = adc_filter.Udc;
+        SPWM_T_TYPE_1Pha_V3_CLA_MARCO(Spwm);
+
+        // ------------------------------------------------------------------------------
+        //  Connect inputs of the PWM_DRV module and call the PWM signal generation macro
+        // ------------------------------------------------------------------------------
+        pwm.MfuncA1 = Spwm.Ta1;
+        pwm.MfuncA2 = Spwm.Ta2;
+
+        pwm.MfuncB1 = Spwm.Tb1;
+        pwm.MfuncB2 = Spwm.Tb2;
+
+        PWM_3T_V3_MACRO(pwm);
+
+    // ------------------------------------------------------------------------------
+    //    Connect inputs of the PWMDAC module
+    // ------------------------------------------------------------------------------
+        PWMDAC_MACRO((Is + 1.0)/2.0,(AdcVaule.Iinv + 1.0)/2.0,(PR_Calculator_curr.OUT + 1.0)/2.0,(pll_Vg.Theta + 1.0)/2.0,125)
+
+        if(PR_Calculator_curr.OUT > 0.950 || PR_Calculator_curr.OUT < -0.950) controller_error_curr++;
+        else controller_error_curr = 0;
+
+        if(controller_error_curr > 100)
+         ClaToCPU.MEASUARE_CPU.flag = 1;
+
+    #endif
+
+#if (BUILDLEVEL == LEVEL6)
+
+        IsrTicker++;
+        count_controller_curr++;
+        //----------------------------------------------------------------------------
+        //=============== VOLTAGLE CONTROL  ======================================
+        pi_volt_Udc.Kp = Kp_volt_Udc_test;
+        pi_volt_Udc.Ki = Ki_volt_Udc_test;
+
+        //-------------------------------
+        if(loop_volt_Udc >= 10)
+        {
+            if(count_start_CL == 1)
+            {
+                rc_Ref.SetpointValue = adc_filter.Udc;
+                count_start_CL = 0;
+            }
+            rc_Ref.TargetValue = CpuToCLA.UdcRef;
+            RC_CLA_MACRO(rc_Ref)
+
+            pi_volt_Udc.REF = rc_Ref.SetpointValue;
+
+            //pi_volt_Udc.INPUT = adc_filter.Udc;
+            pi_volt_Udc.INPUT = filterBand_Udc.Out_k;
+
+            pi_volt_Udc.ERROR = - pi_volt_Udc.REF + pi_volt_Udc.INPUT;
+            PI_VOLTAGE_MACRO(pi_volt_Udc)
+
+            loop_volt_Udc = 1;
+        }
+        else loop_volt_Udc++;
+        //----------------------------------------------------------------------------
+        // PR current controller
+
+        Is   = pi_volt_Udc.OUT*CLAcosPU(pll_Vg.Theta);
+
+        PR_Parameter_curr.Kp = Kp_curr_test;
+        PR_Parameter_curr.Ki = Ki_curr_test;
+        PR_CALCULATOR_PARAMETER_V1(PR_Parameter_curr,1)
+
+        PR_Calculator_curr.Error_k = Is - AdcVaule.Iinv;
+        PR_Calcalator_MACRO(PR_Calculator_curr,PR_Parameter_curr)
+
+        Spwm.Ua   = PR_Calculator_curr.OUT;
+        if(sw_uc == 0)
+        {
+            Spwm.Udc1   = adc_filter.Udc1;
+            Spwm.Udc2   = adc_filter.Udc2;
+        }
+        else
+        {
+            Spwm.Udc1   = adc_filter.Udc2;
+            Spwm.Udc2   = adc_filter.Udc1;
+        }
+        if(sw_uc == 0)
+        {
+            if(count_controller_curr == 5000)
+            {
+            	//sw_uc = 1;
+            }
+        }
+        Spwm.Udc = adc_filter.Udc;
+        //Spwm.Udc = adc_filter.Udc1 + adc_filter.Udc2;
+        SPWM_T_TYPE_1Pha_V3_CLA_MARCO(Spwm);
+
+
+        // ------------------------------------------------------------------------------
+        //  Connect inputs of the PWM_DRV module and call the PWM signal generation macro
+        // ------------------------------------------------------------------------------
+        pwm.MfuncA1 = Spwm.Ta1;
+        pwm.MfuncA2 = Spwm.Ta2;
+
+        pwm.MfuncB1 = Spwm.Tb1;
+        pwm.MfuncB2 = Spwm.Tb2;
+
+        PWM_3T_V3_MACRO(pwm);
+    // ------------------------------------------------------------------------------
+    //    Connect inputs of the PWMDAC module
+    // ------------------------------------------------------------------------------
+
+        if(pi_volt_Udc.OUT > (1.48*Idm/Is_max) || pi_volt_Udc.OUT < -(1.48*Idm/Is_max))controller_error_volt++;
+        else controller_error_volt = 0;
+
+        if(PR_Calculator_curr.OUT > 0.9480 || PR_Calculator_curr.OUT < -0.9480) controller_error_curr++;
+        else controller_error_curr = 0;
+
+      // if(controller_error_volt > 100 || controller_error_curr > 100)
+      //  ClaToCPU.MEASUARE_CPU.flag = 1;
+
+        PWMDAC_MACRO((Is + 1.0)/2.0,(AdcVaule.Iinv + 1.0)/2.0,(PR_Calculator_curr.OUT + 1.0)/2.0,(pll_Vg.Theta + 1.0)/2.0,125)
+
+    #endif
+
+    }
+    else
+    {
+
+    //=========================================================================
+    //   Ngat phat xung PWM
+    // ========================================================================
+    EPwm1Regs.DBCTL.bit.OUT_MODE = 0; // disabled Dead Band
+    EPwm2Regs.DBCTL.bit.OUT_MODE = 0; // disabled Dead Band
+    EPwm3Regs.DBCTL.bit.OUT_MODE = 0; // disabled Dead Band
+    EPwm4Regs.DBCTL.bit.OUT_MODE = 0; // disabled Dead Band
+    EPwm5Regs.DBCTL.bit.OUT_MODE = 0; // disabled Dead Band
+    EPwm6Regs.DBCTL.bit.OUT_MODE = 0; // disabled Dead Band
+
+    EPwm1Regs.CMPA.bit.CMPA = pwm.PeriodMax;    // Set compare A value : PWM1A -> muc 0
+    EPwm1Regs.CMPB.bit.CMPB = 0;                // Set Compare B value : PWM1B   -> muc 0
+
+    EPwm2Regs.CMPA.bit.CMPA = pwm.PeriodMax;    // Set compare A value
+    EPwm2Regs.CMPB.bit.CMPB = 0;                // Set Compare B value 0
+
+    EPwm3Regs.CMPA.bit.CMPA = pwm.PeriodMax;    // Set compare A value
+    EPwm3Regs.CMPB.bit.CMPB = 0;                // Set Compare B value
+
+    EPwm4Regs.CMPA.bit.CMPA = pwm.PeriodMax;    // Set compare A value : PWM1A -> muc 0
+    EPwm4Regs.CMPB.bit.CMPB = 0;                // Set Compare B value : PWM1B   -> muc 0
+
+    EPwm5Regs.CMPA.bit.CMPA = pwm.PeriodMax;    // Set compare A value
+    EPwm5Regs.CMPB.bit.CMPB = 0;                // Set Compare B value 0
+
+    EPwm6Regs.CMPA.bit.CMPA = 0;                // Set compare A value
+    EPwm6Regs.CMPB.bit.CMPB = 0;                // Set Compare B value
+
+    //=========================================================================
+    //  RESET cac bien
+    // ========================================================================
+    count_start_CL = 1;
+    loop_volt_Udc = 10;
+    loop_volt_Us = 0;
+    loop_curr_Is = 0;
+    controller_error_volt = 0;
+    controller_error_curr = 0;
+    count_controller_curr = 0;
+
+    PR_Calculator_curr.Error_k_1 = 0;PR_Calculator_curr.Error_k_2 = 0;
+    PR_Calculator_curr.Ui_k = 0; PR_Calculator_curr.Ui_k_1 = 0;
+    PR_Calculator_curr.Ui_k_2 = 0; PR_Calculator_curr.OUT = 0;
+
+    PR_Calculator_volt.Error_k_1 = 0;PR_Calculator_volt.Error_k_2 = 0;
+    PR_Calculator_volt.Ui_k = 0; PR_Calculator_volt.Ui_k_1 = 0;
+    PR_Calculator_volt.Ui_k_2 = 0; PR_Calculator_volt.OUT = 0;
+
+    pi_volt_Udc.OUT_P = 0; pi_volt_Udc.OUT_I = 0; pi_volt_Udc.OUT = 0;
+
+    ClaToCPU.MEASUARE_CPU.flag = 0;
+
+    rc_Ref.SetpointValue = 0;
+    }
+
+    #if (CLA_DEBUG==1)
+    __mdebugstop();
+    #endif
+
+}
+interrupt void Cla1Task2 (void) {}
+interrupt void Cla1Task3 (void) {}
+interrupt void Cla1Task4 (void) {}
+interrupt void Cla1Task5 (void) {}
+interrupt void Cla1Task6 (void) {}
+interrupt void Cla1Task7 (void) {}
+interrupt void Cla1Task8 (void) {
+    #if (CLA_DEBUG==1)
+    //__mdebugstop();
+    #endif
+
+
+    i =0 ;
+
+
+    RAMP_GEN_CLA_INIT(rg1)
+    rg1.StepAngleMax = BASE_FREQ*T;
+
+    pwm.PeriodMax = (FREQUENCY_CLOCK_PWM/(2*SVM_SYSTEM)); /* Initializa ePWM */
+
+    SPWM_T_TYPE_1Pha_CLA_INT(Spwm)
+    //================================================================
+    // PARK 1 PHASE
+    PARK_1PHASE_CLA_INT(park_volt_Vg)
+    park_volt_Vg.Ts = T;
+    park_volt_Vg.wn = 100*PI;
+    PARK_1PHASE_CLA_PARA(park_volt_Vg)
+    //================================================================
+    // PLL GRID VOLTAGE
+    PLL_1PHASE_CLA_INT(pll_Vg)
+    pll_Vg.Kp = Kp_pll;
+    pll_Vg.Ki = Ki_pll;
+    pll_Vg.Ts = T;
+    pll_Vg.IN_MAX = Us_max;
+    pll_Vg.OUT_MAX = Wmax;
+    pll_Vg.wref    = 1.0*Wref/Wmax;
+
+    //================================================================
+
+    RC_INT_MACRO(rc1)
+    rc1.StepRampDec = 0.01/BASE_FREQ;
+    rc1.StepRampInc = 0.01/BASE_FREQ;
+
+    RC_INT_MACRO(rc_Ref)
+
+#if(BUILDLEVEL == LEVEL1)
+    // Open loop
+    rc_Ref.StepRampDec = 0.5/Us_max;
+    rc_Ref.StepRampInc = 0.5/Us_max;
+#endif
+
+#if(BUILDLEVEL == LEVEL2)
+    // Open Loop + balance
+    rc_Ref.StepRampDec = 0.5/Us_max;
+    rc_Ref.StepRampInc = 0.5/Us_max;
+#endif
+
+#if(BUILDLEVEL == LEVEL3)
+    // Current loop stand alone
+    rc_Ref.StepRampDec = 0.01/Is_max;
+    rc_Ref.StepRampInc = 0.01/Is_max;
+#endif
+
+#if(BUILDLEVEL == LEVEL4)
+    // Voltage loop stand alone
+    rc_Ref.StepRampDec = 0.2/Us_max;
+    rc_Ref.StepRampInc = 0.2/Us_max;
+
+    // Ghep CFDAB
+    rc_Ref.StepRampDec = 0.07/Us_max;
+    rc_Ref.StepRampInc = 0.07/Us_max;
+#endif
+
+#if(BUILDLEVEL == LEVEL5)
+    // Current loop grid mode
+    rc_Ref.StepRampDec = 0.01/Is_max;
+    rc_Ref.StepRampInc = 0.01/Is_max;
+#endif
+
+#if(BUILDLEVEL == LEVEL6)
+    // voltage loop grid mode
+    rc_Ref.StepRampDec = 0.1/Udc_max;
+    rc_Ref.StepRampInc = 0.1/Udc_max;
+#endif
+
+#if(BUILDLEVEL == LEVEL7)
+    // Voltage loop stand alone
+    rc_Ref.StepRampDec = 0.2/Us_max;
+    rc_Ref.StepRampInc = 0.2/Us_max;
+#endif
+    //=================================================================
+    // PR controller
+
+#if(BUILDLEVEL == LEVEL3)
+    PR_CACULATOR_INT(PR_Calculator_curr)
+    PR_PARAMETER_INT(PR_Parameter_curr)
+
+    PR_Parameter_curr.IN_MAX = Is_max;
+    PR_Parameter_curr.OUT_MAX = Us_max;
+    PR_Parameter_curr.Kp = KP_CURR_LOOP;
+    PR_Parameter_curr.Ki = KI_CURR_LOOP;
+    PR_Parameter_curr.Ts = Ti;
+    PR_Parameter_curr.w1 = 314.0;
+    PR_CALCULATOR_PARAMETER_V1(PR_Parameter_curr,1)
+    Kp_curr_test  = KP_CURR_LOOP;
+    Ki_curr_test  = KI_CURR_LOOP;
+
+#endif
+
+#if(BUILDLEVEL == LEVEL4)
+    PR_CACULATOR_INT(PR_Calculator_volt)
+    PR_PARAMETER_INT(PR_Parameter_volt)
+    PR_Parameter_volt.IN_MAX = Us_max;
+    PR_Parameter_volt.OUT_MAX = Is_max;
+    PR_Parameter_volt.Kp = KP_VOLT_US_LOOP;
+    PR_Parameter_volt.Ki = KI_VOLT_US_LOOP;
+    PR_Parameter_volt.Ts = T_us;
+    PR_Parameter_volt.w1 = 314.0;
+    PR_CALCULATOR_PARAMETER_V1(PR_Parameter_volt,1)
+    Kp_volt_Us_test  = KP_VOLT_US_LOOP;
+    Ki_volt_Us_test  = KI_VOLT_US_LOOP;
+
+    PR_CACULATOR_INT(PR_Calculator_curr)
+    PR_PARAMETER_INT(PR_Parameter_curr)
+    PR_Parameter_curr.IN_MAX = Is_max;
+    PR_Parameter_curr.OUT_MAX = Us_max;
+    PR_Parameter_curr.Kp = KP_CURR_LOOP;
+    PR_Parameter_curr.Ki = KI_CURR_LOOP;
+    PR_Parameter_curr.Ts = Ti;
+    PR_Parameter_curr.w1 = 314.0;
+    PR_CALCULATOR_PARAMETER_V1(PR_Parameter_curr,1)
+    Kp_curr_test  = KP_CURR_LOOP;
+    Ki_curr_test  = KI_CURR_LOOP;
+
+#endif
+
+#if(BUILDLEVEL == LEVEL5)
+    PR_CACULATOR_INT(PR_Calculator_curr)
+    PR_PARAMETER_INT(PR_Parameter_curr)
+    PR_Parameter_curr.IN_MAX = Is_max;
+    PR_Parameter_curr.OUT_MAX = Us_max;
+    PR_Parameter_curr.Kp = KP_CURR_LOOP;
+    PR_Parameter_curr.Ki = KI_CURR_LOOP;
+    PR_Parameter_curr.Ts = Ti;
+    PR_Parameter_curr.w1 = 314.0;
+    PR_CALCULATOR_PARAMETER_V1(PR_Parameter_curr,1)
+    Kp_curr_test  = KP_CURR_LOOP;
+    Ki_curr_test  = KI_CURR_LOOP;
+
+#endif
+#if(BUILDLEVEL == LEVEL6)
+
+    PR_CACULATOR_INT(PR_Calculator_curr)
+    PR_PARAMETER_INT(PR_Parameter_curr)
+    PR_Parameter_curr.IN_MAX = Is_max;
+    PR_Parameter_curr.OUT_MAX = Us_max;
+    PR_Parameter_curr.Kp = KP_CURR_LOOP;
+    PR_Parameter_curr.Ki = KI_CURR_LOOP;
+    PR_Parameter_curr.Ts = Ti;
+    PR_Parameter_curr.w1 = 314.0;
+    PR_CALCULATOR_PARAMETER_V1(PR_Parameter_curr,1)
+    Kp_curr_test  = KP_CURR_LOOP;
+    Ki_curr_test  = KI_CURR_LOOP;
+
+    // Voltage controller
+    PI_NORMAL_INT(pi_volt_Udc)
+    pi_volt_Udc.Ts = T_udc;
+    pi_volt_Udc.Kp = KP_VOLT_UDC_LOOP;
+    pi_volt_Udc.Ki = KI_VOLT_UDC_LOOP;
+    pi_volt_Udc.IN_max   = (float)Udc_max;
+    pi_volt_Udc.OUT_max  = (float)Is_max;
+
+    Kp_volt_Udc_test = KP_VOLT_UDC_LOOP;
+    Ki_volt_Udc_test = KI_VOLT_UDC_LOOP;
+
+#endif
+
+    //================================================================
+    // Grid voltage
+    CALCULATOR_RMS_CLA_INIT(Calculator_VgRms);
+    Calculator_VgRms.nsamplesTB = (1.0/GRID_FREQUENCY)*ISR_FREQUENCY;
+
+    Calculator_VLRms = Calculator_VgRms;
+    Calculator_IinvRms = Calculator_VgRms;
+    Calculator_ILRms = Calculator_VgRms;
+    //=================================================================
+
+    LOWPASSFILTER_INT(filter_Udc)
+    LOWPASSFILTER_INT(filter_Udc1)
+    LOWPASSFILTER_INT(filter_Udc2)
+    LOWPASSFILTER_INT(filter_Iinv)
+    LOWPASSFILTER_INT(filter_IL)
+    LOWPASSFILTER_INT(filter_Vg)
+    LOWPASSFILTER_INT(filter_VL)
+
+    LOWPASSFILTER_INT(filter_IinvRms)
+    LOWPASSFILTER_INT(filter_ILRms)
+    LOWPASSFILTER_INT(filter_VgRms)
+    LOWPASSFILTER_INT(filter_VLRms)
+
+	BANDSTOP_FILTER_INT(filterBand_Udc);
+
+    // fc = 100Hz
+    filterBand_Udc.w0 = 2*PI*100;
+    filterBand_Udc.wc = 2*PI*100;
+    filterBand_Udc.Ts = T;
+    BANDSTOP_FILTER_PARA(filterBand_Udc);
+
+    // fc = 1kHz
+    filter_Udc_pre.Heso_out = 1.0/(1.0 + T*2*PI*1000);
+    filter_Udc_pre.Heso_in = 1.0 - filter_Udc_pre.Heso_out;
+
+    // fc = 10kHz
+    filter_Udc.Heso_out = 1.0/(1.0 + T*2*PI*10000);
+    filter_Udc.Heso_in = 1.0 - filter_Udc.Heso_out;
+
+    // fc = 10kHz
+    filter_Udc1.Heso_out = 1.0/(1.0 + T*2*PI*10000);
+    filter_Udc1.Heso_in = 1.0 - filter_Udc1.Heso_out;
+
+    filter_Udc2.Heso_out = 1.0/(1.0 + T*2*PI*10000);
+    filter_Udc2.Heso_in = 1.0 - filter_Udc2.Heso_out;
+
+    // fc = 10kHz
+    filter_Iinv.Heso_out = 1.0/(1.0 + T*2*PI*10000);
+    filter_Iinv.Heso_in = 1.0 - filter_Iinv.Heso_out;
+
+    filter_IL.Heso_out = 1.0/(1.0 + T*2*PI*10000);
+    filter_IL.Heso_in = 1.0 - filter_IL.Heso_out;
+
+    filter_Vg.Heso_out = 1.0/(1.0 + T*2*PI*10000);
+    filter_Vg.Heso_in = 1.0 - filter_Vg.Heso_out;
+
+    filter_VL.Heso_out = 1.0/(1.0 + T*2*PI*10000);
+    filter_VL.Heso_in = 1.0 - filter_VL.Heso_out;
+
+    filter_temp.Heso_out = 1.0/(1.0 + T*2*PI*10000);
+    filter_temp.Heso_in = 1.0 - filter_temp.Heso_out;
+
+
+    // fc = 1kHz
+    filter_IinvRms.Heso_out = 1.0/(1.0 + T*2*PI*1000);
+    filter_IinvRms.Heso_in = 1.0 - filter_IinvRms.Heso_out;
+
+    filter_ILRms.Heso_out = 1.0/(1.0 + T*2*PI*1000);
+    filter_ILRms.Heso_in = 1.0 - filter_ILRms.Heso_out;
+
+    filter_VgRms.Heso_out = 1.0/(1.0 + T*2*PI*1000);
+    filter_VgRms.Heso_in = 1.0 - filter_VgRms.Heso_out;
+
+    filter_VLRms.Heso_out = 1.0/(1.0 + T*2*PI*1000);
+    filter_VLRms.Heso_in = 1.0 - filter_VLRms.Heso_out;
+
+    //================================================================================================
+    // Khoi tao cac bien
+    i =0;
+    OffsetCalCounter = 0;
+    ResetOffset = 1;
+    IsrTicker = 0;
+    START_ADC = 2;
+
+    count_start_CL = 1;
+    loop_volt_Udc = 10;
+    loop_volt_Us = 0;
+    loop_curr_Is = 0;
+    controller_error_volt = 0;
+    controller_error_curr = 0;
+    point_start = 0;
+    START_CONTROLLER = 0;
+    sw_uc = 1;
+    count_controller_curr = 0;
+    /**********************************************************/
+    __mnop();
+    __mnop();
+    __mnop();
+}
